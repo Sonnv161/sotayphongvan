@@ -201,7 +201,7 @@ function renderTheory(mod) {
       const actions = block.custom
         ? `<div class="inline-actions">${customActions("edit-theory", "delete-theory", block.id, mod.id)}</div>`
         : "";
-      return `<article class="card theory">${mine ? `<div class="q-meta">${mine}</div>` : ""}<h3>${escapeHtml(block.h)}</h3>${block.html || textToHtml(block.text)}${actions}</article>`;
+      return `<article class="card theory" data-side="${escapeHtml(block.h)}">${mine ? `<div class="q-meta">${mine}</div>` : ""}<h3>${escapeHtml(block.h)}</h3>${block.html || textToHtml(block.text)}${actions}</article>`;
     })
     .join("");
 }
@@ -317,6 +317,7 @@ function renderEditor() {
       </label>`,
   };
   const ownCount = custom.modules.length + Object.values(custom.extras).reduce((sum, bucket) => sum + (bucket.theory?.length || 0) + (bucket.questions?.length || 0), 0);
+  $("content").className = "content";
   $("content").innerHTML = `
     <p class="kicker">Ghi chú của bạn</p>
     <h2>${editing ? "Cập nhật nội dung" : "Thêm mới"}</h2>
@@ -342,6 +343,84 @@ function renderEditor() {
   $("done-btn").hidden = true;
 }
 
+let railObserver = null;
+
+function panelFor(moduleId, heading) {
+  const book = window.SIDE_PANELS || {};
+  const chapter = book[moduleId] || {};
+  return chapter[heading] || chapter.default || book.default;
+}
+
+function renderRail(heading) {
+  const rail = $("rail");
+  if (!rail) return;
+  document.querySelectorAll(".theory[data-side]").forEach((card) => {
+    card.classList.toggle("is-current", card.dataset.side === heading);
+  });
+  const panel = panelFor(state.moduleId, heading);
+  if (!panel) {
+    rail.innerHTML = "";
+    return;
+  }
+  const steps = (panel.steps || [])
+    .map((step, index, all) => {
+      const node = `<div class="node"><strong>${escapeHtml(step.name)}</strong>${step.note ? `<span>${escapeHtml(step.note)}</span>` : ""}</div>`;
+      const arrow = index < all.length - 1 ? `<div class="arrow">${escapeHtml(step.arrow || "xuống")}</div>` : "";
+      return node + arrow;
+    })
+    .join("");
+  rail.innerHTML = `
+    <article class="card">
+      <p class="rail-label">Mô hình</p>
+      <h3>${escapeHtml(panel.title || heading)}</h3>
+      ${panel.note ? `<p>${escapeHtml(panel.note)}</p>` : ""}
+      <div class="flow">${steps}</div>
+    </article>
+    ${
+      panel.code
+        ? `<article class="card"><p class="rail-label">Code ví dụ</p><h3>${escapeHtml(panel.codeTitle || "Ví dụ")}</h3><pre><code>${escapeHtml(panel.code)}</code></pre></article>`
+        : ""
+    }
+  `;
+}
+
+function syncRail() {
+  const cards = [...document.querySelectorAll(".theory[data-side]")];
+  if (!cards.length || !$("rail")) return;
+  let chosen = cards[0];
+  for (const card of cards) {
+    if (card.getBoundingClientRect().top < 180) chosen = card;
+  }
+  if (chosen.dataset.side === state.railKey) return;
+  state.railKey = chosen.dataset.side;
+  renderRail(chosen.dataset.side);
+}
+
+if (!window.__railScroll) {
+  window.__railScroll = () => syncRail();
+  window.addEventListener("scroll", window.__railScroll, { passive: true });
+}
+
+function watchRail() {
+  if (railObserver) railObserver.disconnect();
+  state.railKey = "";
+  syncRail();
+  const cards = [...document.querySelectorAll(".theory[data-side]")];
+  railObserver = new IntersectionObserver(
+    (entries) => {
+      const hits = entries.filter((entry) => entry.isIntersecting);
+      if (!hits.length) return;
+      const latest = hits.sort((a, b) => b.time - a.time)[0];
+      const side = latest.target.dataset.side;
+      if (side === state.railKey) return;
+      state.railKey = side;
+      renderRail(side);
+    },
+    { rootMargin: "-70px 0px -60% 0px", threshold: 0 }
+  );
+  cards.forEach((card) => railObserver.observe(card));
+}
+
 function renderModule() {
   const mod = MODULES.find((m) => m.id === state.moduleId);
   const done = state.done.has(mod.id);
@@ -356,23 +435,30 @@ function renderModule() {
     : "";
   const notice = state.notice ? `<p class="notice">${escapeHtml(state.notice)}</p>` : "";
   state.notice = "";
+  $("content").className = "content with-rail";
   $("content").innerHTML = `
-    <p class="kicker">${escapeHtml(mod.group)}</p>
-    <h2>${escapeHtml(mod.title)}</h2>
-    <p class="lead">${escapeHtml(mod.summary)}</p>
-    ${notice}
-    <div class="badges">${levelBadge(mod.level)}<span class="badge">${mod.questions.length} câu hỏi</span>${mod.custom ? `<span class="badge mine">Chương của bạn</span>` : ""}</div>
-    ${moduleActions}
-    <div class="inline-actions">
-      <button type="button" class="ghost" data-action="add-question">Thêm câu hỏi vào chương này</button>
-      <button type="button" class="ghost" data-action="add-theory">Thêm mục lý thuyết</button>
+    <div class="reading">
+      <p class="kicker">${escapeHtml(mod.group)}</p>
+      <h2>${escapeHtml(mod.title)}</h2>
+      <p class="lead">${escapeHtml(mod.summary)}</p>
+      ${notice}
+      <div class="badges">${levelBadge(mod.level)}<span class="badge">${mod.questions.length} câu hỏi</span>${mod.custom ? `<span class="badge mine">Chương của bạn</span>` : ""}</div>
+      ${moduleActions}
+      <div class="inline-actions">
+        <button type="button" class="ghost" data-action="add-question">Thêm câu hỏi vào chương này</button>
+        <button type="button" class="ghost" data-action="add-theory">Thêm mục lý thuyết</button>
+      </div>
+      <h3 class="section-title">Lý thuyết</h3>
+      ${renderTheory(mod)}
+      <h3 class="section-title">Câu hỏi phỏng vấn</h3>
+      ${renderQuestions(mod)}
+      ${renderQuiz(mod)}
     </div>
-    <h3 class="section-title">Lý thuyết</h3>
-    ${renderTheory(mod)}
-    <h3 class="section-title">Câu hỏi phỏng vấn</h3>
-    ${renderQuestions(mod)}
-    ${renderQuiz(mod)}
+    <aside class="rail" id="rail" aria-label="Mô hình và code ví dụ"></aside>
   `;
+  const first = mod.theory[0]?.h || "";
+  renderRail(first);
+  watchRail();
 }
 
 function renderSearch() {
@@ -387,6 +473,7 @@ function renderSearch() {
       hits.push({ mod, item });
     }
   }
+  $("content").className = "content";
   $("content").innerHTML = `
     <p class="kicker">Tìm kiếm</p>
     <h2>${hits.length} kết quả</h2>

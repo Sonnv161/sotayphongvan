@@ -125,6 +125,36 @@ button, input { font-family: inherit; }
 .done-btn.is-done { background: #1f3b32; }
 
 .content { padding: 28px 36px 80px; max-width: 920px; }
+.content.with-rail {
+  max-width: none;
+  display: grid;
+  grid-template-columns: minmax(0, 820px) minmax(300px, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+.reading { min-width: 0; }
+.rail {
+  position: sticky;
+  top: 78px;
+  max-height: calc(100vh - 96px);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.rail-label { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+.flow { display: flex; flex-direction: column; }
+.node {
+  background: #f4f8f6;
+  border: 1px solid #c9ddd4;
+  border-radius: 12px;
+  padding: 8px 10px;
+}
+.node strong { display: block; font-size: 14px; }
+.node span { color: var(--muted); font-size: 13px; }
+.arrow { text-align: center; color: #8a6a32; font-size: 12px; font-weight: 600; padding: 5px 0; }
+.theory.is-current { border-color: #8dceb3; box-shadow: 0 0 0 3px rgba(14, 107, 82, 0.08); }
+.rail pre { margin: 0; }
 .kicker { color: var(--accent); font-weight: 600; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; margin: 0 0 6px; }
 .content h2 { font-family: var(--serif); font-size: 40px; line-height: 1.15; margin: 0 0 10px; }
 .lead { font-size: 17px; color: #31404c; margin-top: 0; }
@@ -240,7 +270,8 @@ textarea, select { font-family: inherit; font-size: 15px; }
   }
   .sidebar.open { transform: none; }
   .menu-btn { display: inline-block; }
-  .content { padding: 20px 16px 64px; }
+  .content, .content.with-rail { padding: 20px 16px 64px; max-width: none; display: block; }
+  .rail { position: static; max-height: none; margin-top: 8px; }
   .content h2 { font-size: 32px; }
   .topbar { padding: 12px; }
 }
