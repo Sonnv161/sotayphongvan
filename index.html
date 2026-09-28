@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ôn phỏng vấn Middle Backend (Gov)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <p class="eyebrow">Middle Backend · Gov</p>
+        <h1>Sổ tay phỏng vấn</h1>
+        <p class="brand-note">Lý thuyết và đáp án cho mức khoảng 3 năm kinh nghiệm.</p>
+      </div>
+      <label class="search">
+        <span class="sr-only">Tìm câu hỏi</span>
+        <input id="search" type="search" placeholder="Tìm câu hỏi, từ khóa..." autocomplete="off" />
+      </label>
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span>Đã học</span>
+          <strong id="progress-text">0/0</strong>
+        </div>
+        <div class="bar"><span id="progress-bar"></span></div>
+      </div>
+      <nav id="nav" class="nav"></nav>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <button class="menu-btn" id="menu-btn" type="button" aria-label="Mở menu">Mục lục</button>
+        <div class="filters" id="filters" role="tablist">
+          <button type="button" class="chip active" data-level="all">Tất cả</button>
+          <button type="button" class="chip" data-level="Cơ bản">Cơ bản</button>
+          <button type="button" class="chip" data-level="Trung cấp">Trung cấp</button>
+          <button type="button" class="chip" data-level="Nâng cao">Nâng cao</button>
+          <button type="button" class="chip chip-tab" id="exp-tab" data-tab="kinh-nghiem">Kinh nghiệm thực tế</button>
+        </div>
+        <button class="add-btn" id="add-btn" type="button">Thêm mới</button>
+        <button class="done-btn" id="done-btn" type="button">Đánh dấu đã học</button>
+      </header>
+      <div id="content" class="content"></div>
+    </div>
+  </div>
+  <script src="js/data-foundation.js"></script>
+  <script src="js/data-platform.js"></script>
+  <script src="js/data-ops.js"></script>
+  <script src="js/data-theory-java.js"></script>
+  <script src="js/data-theory-spring.js"></script>
+  <script src="js/data-theory-sql.js"></script>
+  <script src="js/data-theory-more.js"></script>
+  <script src="js/data-threading.js"></script>
+  <script src="js/data-experience.js"></script>
+  <script src="js/data-interview.js"></script>
+  <script src="js/data-interview-2.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
